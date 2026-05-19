@@ -1,0 +1,75 @@
+{
+  "version": 3,
+  "targets": {
+    "net10.0-windows7.0": {}
+  },
+  "libraries": {},
+  "projectFileDependencyGroups": {
+    "net10.0-windows7.0": []
+  },
+  "packageFolders": {
+    "C:\\Users\\10TerYan15\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Users\\10TerYan15\\Documents\\projet-6-caisse_pos\\GUI\\Projet6\\Projet6\\Projet6.csproj",
+      "projectName": "Projet6",
+      "projectPath": "C:\\Users\\10TerYan15\\Documents\\projet-6-caisse_pos\\GUI\\Projet6\\Projet6\\Projet6.csproj",
+      "packagesPath": "C:\\Users\\10TerYan15\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\10TerYan15\\Documents\\projet-6-caisse_pos\\GUI\\Projet6\\Projet6\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\10TerYan15\\AppData\\Roaming\\NuGet\\NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net10.0-windows"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net10.0-windows7.0": {
+          "targetAlias": "net10.0-windows",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "all"
+      },
+      "SdkAnalysisLevel": "10.0.200"
+    },
+    "frameworks": {
+      "net10.0-windows7.0": {
+        "targetAlias": "net10.0-windows",
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          },
+          "Microsoft.WindowsDesktop.App.WindowsForms": {
+            "privateAssets": "none"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Users\\10TerYan15\\.dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}

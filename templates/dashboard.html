@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard POS Dynamique</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; margin: 0; }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
+        .summary-box { display: flex; justify-content: space-around; margin-bottom: 25px; gap: 15px; }
+        .card { background: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; flex: 1; }
+        .card h3 { margin: 0 0 10px 0; color: #7f8c8d; font-size: 14px; text-transform: uppercase; }
+        .card p { margin: 0; font-size: 24px; font-weight: bold; color: #2c3e50; }
+        .charts-wrapper { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 20px; }
+        .chart-container { width: 45%; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 350px; }
+        .chart-container.full-width { width: 94%; }
+    </style>
+</head>
+<body>
+    <h1>Tableau de Bord - Caisse Enregistreuse POS</h1>
+    
+    <div class="summary-box">
+        <div class="card"><h3>Tickets Édités</h3><p id="sum-tickets">0</p></div>
+        <div class="card"><h3>Chiffre d'Affaires Global (TTC)</h3><p id="sum-ca">0.00 €</p></div>
+        <div class="card"><h3>Total TVA Collectée</h3><p id="sum-tva">0.00 €</p></div>
+    </div>
+
+    <div class="charts-wrapper">
+        <div class="chart-container full-width"><canvas id="caChart"></canvas></div>
+        <div class="chart-container"><canvas id="topProductsChart"></canvas></div>
+        <div class="chart-container"><canvas id="vatChart"></canvas></div>
+    </div>
+
+    <script>
+        let caChartInstance, topChartInstance, vatChartInstance;
+
+        async function loadData() {
+            try {
+                const res = await fetch('/api/stats/dashboard'); 
+                const json = await res.json();
+                
+                if (json.status === "ok") {
+                    const data = json.data;
+                    
+                    // Mise à jour des compteurs textuels
+                    document.getElementById('sum-tickets').innerText = data.summary.n_tickets;
+                    document.getElementById('sum-ca').innerText = data.summary.ca_ttc.toFixed(2) + " €";
+                    document.getElementById('sum-tva').innerText = data.summary.tva_total.toFixed(2) + " €";
+                    
+                    // Rafraîchissement des graphiques
+                    updateCharts(data);
+                }
+            } catch (err) { console.error("Erreur de rafraîchissement:", err); }
+        }
+
+        function updateCharts(data) {
+            // --- Graphique 1 : Historique CA Quotidien (Line) ---
+            const ctxCA = document.getElementById('caChart').getContext('2d');
+            const labelsCA = data.history.map(h => h.day);
+            const valuesCA = data.history.map(h => h.total);
+
+            if (caChartInstance) caChartInstance.destroy();
+            caChartInstance = new Chart(ctxCA, {
+                type: 'line',
+                data: {
+                    labels: labelsCA.length ? labelsCA : ['Aujourd\'hui'],
+                    datasets: [{ label: 'Ventes du jour (€)', data: valuesCA.length ? valuesCA : [data.summary.ca_ttc], borderColor: '#2980b9', backgroundColor: 'rgba(41, 128, 185, 0.1)', fill: true }]
+                },
+                options: { responsive: true, plugins: { title: { display: true, text: 'Chiffre d\'Affaires Quotidien' } } }
+            });
+
+            // --- Graphique 2 : Top 10 Produits (Bar Horizontal) ---
+            const ctxTop = document.getElementById('topProductsChart').getContext('2d');
+            const labelsTop = data.top_products.map(p => p.name);
+            const valuesTop = data.top_products.map(p => p.revenue);
+
+            if (topChartInstance) topChartInstance.destroy();
+            topChartInstance = new Chart(ctxTop, {
+                type: 'bar',
+                data: {
+                    labels: labelsTop,
+                    datasets: [{ label: 'CA par produit (€)', data: valuesTop, backgroundColor: '#27ae60' }]
+                },
+                options: { indexAxis: 'y', responsive: true, plugins: { title: { display: true, text: 'Top Produits par Chiffre d\'Affaires' } } }
+            });
+
+            // --- Graphique 3 : Répartition par Taux de TVA (Doughnut) ---
+            const ctxVAT = document.getElementById('vatChart').getContext('2d');
+            const labelsVAT = data.vat_split.map(v => (v.vat_rate * 100) + '%');
+            const valuesVAT = data.vat_split.map(v => v.vat_amount);
+
+            if (vatChartInstance) vatChartInstance.destroy();
+            vatChartInstance = new Chart(ctxVAT, {
+                type: 'doughnut',
+                data: {
+                    labels: labelsVAT,
+                    datasets: [{ data: valuesVAT, backgroundColor: ['#e74c3c', '#f1c40f', '#9b59b6'] }]
+                },
+                options: { responsive: true, plugins: { title: { display: true, text: 'Répartition de la TVA par Taux (6%, 12%, 21%)' } } }
+            });
+        }
+
+        // Chargement immédiat et boucle toutes les 5 secondes
+        loadData();
+        setInterval(loadData, 5000);
+    </script>
+</body>
+</html>
