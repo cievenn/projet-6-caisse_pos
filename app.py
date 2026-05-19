@@ -32,7 +32,15 @@ def delete_product(id):
         return jsonify({"status": "ok", "data": None})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
-
+    
+@app.route("/api/products/<int:id>", methods=["PUT"])
+def update_product(id):
+    try:
+        module.update_product(id, request.json)
+        return jsonify({"status": "ok", "data": None})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+    
 # --- Routes Transactions ---
 @app.route("/api/transactions", methods=["POST"])
 def create_transaction():

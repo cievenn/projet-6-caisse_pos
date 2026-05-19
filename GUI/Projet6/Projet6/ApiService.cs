@@ -42,6 +42,14 @@ namespace Projet6
             var response = await _client.PostAsync("/api/products", content);
             if (!response.IsSuccessStatusCode) throw new Exception("Erreur lors de l'ajout du produit.");
         }
+        
+        public async Task UpdateProductAsync(int id, object productBody)
+        {
+            var json = JsonSerializer.Serialize(productBody);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _client.PutAsync($"/api/products/{id}", content);
+            if (!response.IsSuccessStatusCode) throw new Exception("Erreur lors de la modification du produit.");
+        }
 
         public async Task DeleteProductAsync(int id)
         {

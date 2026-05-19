@@ -60,7 +60,7 @@ namespace Projet6
             TabPage tabCat = new TabPage("📦 Gestion Catalogue");
             dgvCatalogue = CreateGrid(20, 20, 600, 450);
             
-            GroupBox grpAdd = new GroupBox { Text = "Nouveau Produit", Location = new Point(640, 20), Size = new Size(300, 280) };
+            GroupBox grpAdd = new GroupBox { Text = "Nouveau / Modifier Produit", Location = new Point(640, 20), Size = new Size(300, 280) };
             grpAdd.Controls.Add(new Label { Text = "Nom :", Location = new Point(20, 30) });
             txtName = new TextBox { Location = new Point(100, 30), Width = 180 };
             grpAdd.Controls.Add(new Label { Text = "Prix HT :", Location = new Point(20, 80) });
@@ -77,8 +77,12 @@ namespace Projet6
             Button btnDelete = new Button { Text = "❌ Supprimer Sélection", Location = new Point(640, 320), Size = new Size(300, 40), BackColor = Color.Salmon };
             btnDelete.Click += BtnDelete_Click;
 
-            tabCat.Controls.AddRange(new Control[] { dgvCatalogue, grpAdd, btnDelete });
+            // Ajout du bouton Modifier
+            Button btnEdit = new Button { Text = "✏️ Modifier Sélection", Location = new Point(640, 370), Size = new Size(300, 40), BackColor = Color.LightYellow };
+            btnEdit.Click += BtnEdit_Click;
 
+            tabCat.Controls.AddRange(new Control[] { dgvCatalogue, grpAdd, btnDelete, btnEdit });
+            
             // --- ONGLET 3 : STATISTIQUES (StatsForm) ---
             TabPage tabStats = new TabPage("📊 Statistiques du Jour");
             lblCa = new Label { Text = "Chiffre d'Affaires TTC : --- €", Location = new Point(50, 50), Size = new Size(400, 30), Font = new Font("Segoe UI", 14) };
@@ -117,6 +121,16 @@ namespace Projet6
                 }
                 dgvPosProducts.DataSource = dt;
                 dgvCatalogue.DataSource = dt;
+
+                // --- ALERTE STOCK FAIBLE (Exigence CDC) ---
+                foreach (DataGridViewRow row in dgvCatalogue.Rows)
+                {
+                    if (row.Cells["Stock"].Value != null && Convert.ToInt32(row.Cells["Stock"].Value) < 5)
+                    {
+                        row.DefaultCellStyle.BackColor = Color.LightCoral; // Ligne en rouge
+                        row.DefaultCellStyle.ForeColor = Color.White;
+                    }
+                }
             }
             catch (Exception ex) { MessageBox.Show("Erreur API : " + ex.Message); }
         }
@@ -181,6 +195,29 @@ namespace Projet6
             int id = Convert.ToInt32(dgvCatalogue.SelectedRows[0].Cells["ID"].Value);
             try { await _api.DeleteProductAsync(id); await LoadProducts(); }
             catch (Exception ex) { MessageBox.Show(ex.Message, "Erreur"); }
+        }
+
+        private async void BtnEdit_Click(object sender, EventArgs e)
+        {
+            if (dgvCatalogue.SelectedRows.Count == 0) return;
+            int id = Convert.ToInt32(dgvCatalogue.SelectedRows[0].Cells["ID"].Value);
+
+            try {
+                // On récupère ce qui est écrit dans les cases d'ajout pour écraser le produit
+                var p = new { 
+                    name = txtName.Text, 
+                    price_ht = Convert.ToDouble(txtPrice.Text), 
+                    vat_rate = Convert.ToDouble(cbVat.Text), 
+                    stock = Convert.ToInt32(txtStock.Text) 
+                };
+                await _api.UpdateProductAsync(id, p);
+                await LoadProducts();
+                MessageBox.Show("Produit modifié avec succès !", "Mise à jour");
+                txtName.Clear(); txtPrice.Clear(); txtStock.Clear();
+            } 
+            catch (Exception) { 
+                MessageBox.Show("Veuillez remplir les champs (Nom, Prix, TVA, Stock) avec les nouvelles valeurs avant de cliquer sur Modifier.", "Information"); 
+            }
         }
 
         private async void BtnPay_Click(object sender, EventArgs e)

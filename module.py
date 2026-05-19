@@ -121,6 +121,14 @@ def delete_product(product_id: int):
         if stock and stock['stock'] > 0:
             raise ValueError("Impossible de supprimer un produit en stock.")
         conn.execute("DELETE FROM products WHERE id = ?", (product_id,))
+        
+def update_product(product_id: int, data: dict):
+    with get_db() as conn:
+        conn.execute("""
+            UPDATE products 
+            SET name = ?, price_ht = ?, vat_rate = ?, stock = ? 
+            WHERE id = ?
+        """, (data['name'], data['price_ht'], data['vat_rate'], data.get('stock', 0), product_id))
 
 # --- Transactions ---
 def create_transaction(items: list, amount_given: float) -> dict:

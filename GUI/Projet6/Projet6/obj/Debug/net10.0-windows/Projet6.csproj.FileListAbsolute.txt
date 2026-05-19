@@ -12,3 +12,4 @@ C:\Users\10TerYan15\Documents\projet-6-caisse_pos\GUI\Projet6\Projet6\obj\Debug\
 C:\Users\10TerYan15\Documents\projet-6-caisse_pos\GUI\Projet6\Projet6\obj\Debug\net10.0-windows\Projet6.pdb
 C:\Users\10TerYan15\Documents\projet-6-caisse_pos\GUI\Projet6\Projet6\obj\Debug\net10.0-windows\Projet6.genruntimeconfig.cache
 C:\Users\10TerYan15\Documents\projet-6-caisse_pos\GUI\Projet6\Projet6\obj\Debug\net10.0-windows\ref\Projet6.dll
+C:\Users\10TerYan15\Documents\projet-6-caisse_pos\GUI\Projet6\Projet6\obj\Debug\net10.0-windows\Projet6.sourcelink.json
