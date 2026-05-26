@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="MainWindow.axaml" value="Projet6_Avalonia.csproj" />
+        <entry key="PaymentWindow.axaml" value="Projet6_Avalonia.csproj" />
+        <entry key="ReceiptWindow.axaml" value="Projet6_Avalonia.csproj" />
+      </map>
+    </option>
+  </component>
+</project>

@@ -1,90 +1,216 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Projet6_Avalonia.MainWindow"
-        Title="Caisse Enregistreuse (POS) - Avalonia"
-        Width="1020" Height="620" WindowStartupLocation="CenterScreen">
+        Title="Boutique L'Atelier - Caisse POS"
+        Width="1200" Height="800" 
+        WindowStartupLocation="CenterScreen"
+        Background="#141519"
+        FontFamily="Segoe UI, system-ui, sans-serif">
 
-    <TabControl>
-        <TabItem Header="🛒 Caisse Principale">
-            <Grid>
-                <DataGrid Name="DgvPosProducts" Margin="20,20,0,0" Width="450" Height="400" HorizontalAlignment="Left" VerticalAlignment="Top" 
-                          AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                        <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="*"/>
-                        <DataGridTextColumn Header="Prix HT" Binding="{Binding PriceDisplay}" Width="80"/>
-                        <DataGridTextColumn Header="TVA" Binding="{Binding VatDisplay}" Width="60"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+    <Window.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="#E2E8F0"/>
+        </Style>
+        
+        <Style Selector="ListBox#DgvPosProducts ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="8"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Background" Value="#22252E"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ListBox#DgvPosProducts ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#22252E"/>
+            <Setter Property="BorderBrush" Value="#00E5FF"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BoxShadow" Value="0 0 15 0 #4000E5FF"/>
+        </Style>
 
-                <DataGrid Name="DgvPosCart" Margin="500,20,0,0" Width="460" Height="350" HorizontalAlignment="Left" VerticalAlignment="Top"
-                          AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                        <DataGridTextColumn Header="Article" Binding="{Binding Nom}" Width="*"/>
-                        <DataGridTextColumn Header="Qté" Binding="{Binding Quantite}" Width="50"/>
-                        <DataGridTextColumn Header="Prix Unit. HT" Binding="{Binding PrixUnit}" Width="90"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+        <Style Selector="TextBox, ComboBox">
+            <Setter Property="Background" Value="#2A2D37"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="10"/>
+        </Style>
 
-                <Button Content="Ajouter au panier ➡️" Margin="20,435,0,0" Width="180" Height="40" Background="#3498db" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnAddCart_Click"/>
-                <TextBlock Name="LblTotalTtc" Text="Total TTC : 0.00 €" Margin="500,385,0,0" Width="300" Height="35" FontSize="16" FontWeight="Bold" Foreground="#c0392b" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                <Button Content="💳 PROCÉDER AU PAIEMENT" Margin="710,435,0,0" Width="250" Height="55" Background="#2ecc71" Foreground="White" FontSize="14" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Top" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="BtnPay_Click"/>
+        <Style Selector="DataGrid">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="RowBackground" Value="#22252E"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        
+        <Style Selector="DataGridRow:nth-child(even)">
+            <Setter Property="Background" Value="#2A2D37"/>
+        </Style>
+        <Style Selector="DataGridColumnHeader">
+            <Setter Property="Background" Value="#1A1C23"/>
+            <Setter Property="Foreground" Value="#9CA3AF"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10"/>
+        </Style>
+
+        <Style Selector="Button">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+    </Window.Styles>
+
+    <TabControl Margin="10" Background="Transparent">
+        <TabItem Header="🛒 Terminal de Vente" FontSize="16" FontWeight="SemiBold" Foreground="#00E5FF">
+            <Grid ColumnDefinitions="*, 400">
+                
+                <Grid Grid.Column="0" RowDefinitions="Auto, *">
+                    <TextBlock Text="Menu / Catalogue" FontSize="22" FontWeight="Bold" Foreground="White" Margin="15,10,0,15"/>
+                    
+                    <ListBox Name="DgvPosProducts" Grid.Row="1" Background="Transparent" BorderThickness="0" SelectionMode="Single">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="160" Height="200" Background="#22252E" CornerRadius="16" BoxShadow="0 4 10 0 #20000000">
+                                    <Grid RowDefinitions="*, Auto, Auto">
+                                        <Border Grid.Row="0" Background="#323644" CornerRadius="16,16,0,0" Margin="0,0,0,10">
+                                            <TextBlock Text="🖼️" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.3"/>
+                                        </Border>
+                                        
+                                        <TextBlock Grid.Row="1" Text="{Binding Name}" FontWeight="SemiBold" FontSize="15" Foreground="White" Margin="12,0,12,5" TextTrimming="CharacterEllipsis"/>
+                                        
+                                        <TextBlock Grid.Row="2" Text="{Binding PriceDisplay}" FontSize="14" Foreground="#9CA3AF" Margin="12,0,12,12"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+
+                <Border Grid.Column="1" Background="#22252E" CornerRadius="16" Margin="15,0,0,0" Padding="20">
+                    <Grid RowDefinitions="Auto, *, Auto, Auto, Auto">
+                        <TextBlock Text="Transaction / Panier" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
+                        
+                        <DataGrid Name="DgvPosCart" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" Margin="0,0,0,15">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Article" Binding="{Binding Nom}" Width="*"/>
+                                <DataGridTextColumn Header="Qté" Binding="{Binding Quantite}" Width="50"/>
+                                <DataGridTextColumn Header="Prix U." Binding="{Binding PrixUnit}" Width="70"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <Button Grid.Row="2" Content="Ajouter la sélection ⬇️" Click="BtnAddCart_Click"
+                                Background="#323644" Foreground="White" 
+                                HorizontalAlignment="Stretch" Padding="12" Margin="0,0,0,20"/>
+
+                        <StackPanel Grid.Row="3" Spacing="10" Margin="0,0,0,25">
+                            <Separator Background="#323644"/>
+                            <TextBlock Name="LblTotalTtc" Text="GRAND TOTAL : 0.00 €" 
+                                       FontSize="24" FontWeight="Black" Foreground="#00FF87" 
+                                       HorizontalAlignment="Right" Margin="0,10,0,0"/>
+                        </StackPanel>
+
+                        <Grid Grid.Row="4" ColumnDefinitions="*, *" RowDefinitions="Auto, Auto">
+                            <Button Grid.Row="0" Grid.Column="0" Content="🗑️ EFFACER" 
+                                    Background="#4A1C20" Foreground="#FF4D4D" Padding="10" Margin="0,0,5,10" HorizontalAlignment="Stretch"/>
+                            
+                            <Button Grid.Row="0" Grid.Column="1" Content="👤 CLIENT" 
+                                    Background="#1A2B4C" Foreground="#4DA6FF" Padding="10" Margin="5,0,0,10" HorizontalAlignment="Stretch"/>
+                            
+                            <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Content="💳 PAIEMENT" Click="BtnPay_Click"
+                                    Background="#00E5FF" Foreground="#141519" FontSize="18" FontWeight="Black"
+                                    HorizontalAlignment="Stretch" Padding="18"/>
+                        </Grid>
+                    </Grid>
+                </Border>
             </Grid>
         </TabItem>
 
-        <TabItem Header="📦 Gestion Catalogue">
-            <Grid>
-                <DataGrid Name="DgvCatalogue" Margin="20,20,0,0" Width="600" Height="460" HorizontalAlignment="Left" VerticalAlignment="Top"
-                          AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" SelectionChanged="DgvCatalogue_SelectionChanged">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                        <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="*"/>
-                        <DataGridTextColumn Header="Prix HT" Binding="{Binding PriceDisplay}" Width="80"/>
-                        <DataGridTextColumn Header="TVA" Binding="{Binding VatDisplay}" Width="60"/>
-                        <DataGridTextColumn Header="Stock" Binding="{Binding Stock}" Width="60"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+        <TabItem Header="📦 Gestion Catalogue" FontSize="16" FontWeight="SemiBold" Foreground="#A0AAB2">
+            <Grid ColumnDefinitions="2*, 1.2*">
+                <Border Background="#22252E" CornerRadius="16" Margin="10" Padding="15">
+                    <DataGrid Name="DgvCatalogue" SelectionChanged="DgvCatalogue_SelectionChanged" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                            <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="*"/>
+                            <DataGridTextColumn Header="Prix HT" Binding="{Binding PriceDisplay}" Width="90"/>
+                            <DataGridTextColumn Header="TVA" Binding="{Binding VatDisplay}" Width="70"/>
+                            <DataGridTextColumn Header="Stock" Binding="{Binding Stock}" Width="70"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
 
-                <StackPanel Margin="640,20,0,0" Width="330" HorizontalAlignment="Left" VerticalAlignment="Top" Spacing="10">
-                    <TextBlock Text="Fiche Produit (Saisie / Édition)" FontWeight="Bold"/>
-                    
-                    <Grid ColumnDefinitions="80,*">
-                        <TextBlock Text="Nom :" VerticalAlignment="Center"/>
-                        <TextBox Name="TxtName" Grid.Column="1"/>
-                    </Grid>
-                    <Grid ColumnDefinitions="80,*">
-                        <TextBlock Text="Prix HT :" VerticalAlignment="Center"/>
-                        <TextBox Name="TxtPrice" Grid.Column="1"/>
-                    </Grid>
-                    <Grid ColumnDefinitions="80,*">
-                        <TextBlock Text="TVA :" VerticalAlignment="Center"/>
-                        <ComboBox Name="CbVat" Grid.Column="1" HorizontalAlignment="Stretch" SelectedIndex="2">
-                            <ComboBoxItem Content="0.06"/>
-                            <ComboBoxItem Content="0.12"/>
-                            <ComboBoxItem Content="0.21"/>
-                        </ComboBox>
-                    </Grid>
-                    <Grid ColumnDefinitions="80,*">
-                        <TextBlock Text="Stock :" VerticalAlignment="Center"/>
-                        <TextBox Name="TxtStock" Grid.Column="1"/>
-                    </Grid>
-                    
-                    <Button Content="➕ Ajouter comme Nouveau" Background="#3498db" Foreground="White" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="BtnAddProduct_Click"/>
-                    
-                    <Button Content="✏️ Enregistrer les Modifs" Background="#f1c40f" Foreground="Black" Margin="0,30,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="BtnEdit_Click"/>
-                    <Button Content="❌ Supprimer l'Article" Background="#e74c3c" Foreground="White" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Click="BtnDelete_Click"/>
-                </StackPanel>
+                <Border Background="#22252E" CornerRadius="16" Grid.Column="1" Margin="10" Padding="25">
+                    <StackPanel Spacing="15">
+                        <TextBlock Text="Fiche Produit" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
+                        
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Nom du produit" Foreground="#9CA3AF" FontSize="12"/>
+                            <TextBox Name="TxtName"/>
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*, 10, *">
+                            <StackPanel Spacing="5" Grid.Column="0">
+                                <TextBlock Text="Prix HT (€)" Foreground="#9CA3AF" FontSize="12"/>
+                                <TextBox Name="TxtPrice"/>
+                            </StackPanel>
+                            <StackPanel Spacing="5" Grid.Column="2">
+                                <TextBlock Text="Stock" Foreground="#9CA3AF" FontSize="12"/>
+                                <TextBox Name="TxtStock"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Taux de TVA" Foreground="#9CA3AF" FontSize="12"/>
+                            <ComboBox Name="CbVat" HorizontalAlignment="Stretch" SelectedIndex="2">
+                                <ComboBoxItem Content="0.06"/>
+                                <ComboBoxItem Content="0.12"/>
+                                <ComboBoxItem Content="0.21"/>
+                            </ComboBox>
+                        </StackPanel>
+                        
+                        <Separator Margin="0,15,0,15" Background="#323644"/>
+
+                        <Button Content="➕ Nouveau Produit" Click="BtnAddProduct_Click" Background="#2563EB" Foreground="White" HorizontalAlignment="Stretch" Padding="10"/>
+                        <Button Content="✏️ Mettre à jour" Click="BtnEdit_Click" Background="#D97706" Foreground="White" HorizontalAlignment="Stretch" Padding="10"/>
+                        <Button Content="❌ Supprimer" Click="BtnDelete_Click" Background="#DC2626" Foreground="White" HorizontalAlignment="Stretch" Padding="10"/>
+                    </StackPanel>
+                </Border>
             </Grid>
         </TabItem>
 
-        <TabItem Header="📊 Statistiques du Jour">
-            <StackPanel Margin="50" Spacing="20">
-                <TextBlock Name="LblCa" Text="Chiffre d'Affaires TTC : --- €" FontSize="16"/>
-                <TextBlock Name="LblTickets" Text="Nombre de Tickets : ---" FontSize="16"/>
-                <TextBlock Name="LblTva" Text="TVA Collectée : --- €" FontSize="16"/>
-                <Button Content="🔄 Rafraîchir les Données" Background="#95a5a6" Foreground="White" Padding="15,10" Click="BtnRefreshStats_Click"/>
-            </StackPanel>
+        <TabItem Header="📊 Statistiques du Jour" FontSize="16" FontWeight="SemiBold" Foreground="#A0AAB2">
+            <Grid>
+                <Border Background="#22252E" CornerRadius="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="450" Padding="40" BoxShadow="0 10 30 0 #30000000">
+                    <StackPanel Spacing="25">
+                        <TextBlock Text="Résumé d'Activité" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                        
+                        <Border Background="#1A2B4C" CornerRadius="12" Padding="20">
+                            <TextBlock Name="LblCa" Text="Chiffre d'Affaires TTC : --- €" FontSize="18" FontWeight="Bold" Foreground="#4DA6FF" HorizontalAlignment="Center"/>
+                        </Border>
+
+                        <Border Background="#163D2D" CornerRadius="12" Padding="20">
+                            <TextBlock Name="LblTickets" Text="Nombre de Tickets : ---" FontSize="18" FontWeight="Bold" Foreground="#00FF87" HorizontalAlignment="Center"/>
+                        </Border>
+
+                        <Border Background="#4A2D1A" CornerRadius="12" Padding="20">
+                            <TextBlock Name="LblTva" Text="TVA Collectée : --- €" FontSize="18" FontWeight="Bold" Foreground="#FF9D4D" HorizontalAlignment="Center"/>
+                        </Border>
+
+                        <Button Content="🔄 Rafraîchir les Données" Click="BtnRefreshStats_Click" Background="#323644" Foreground="White" Padding="15" Margin="0,20,0,0" HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </TabItem>
     </TabControl>
 </Window>
