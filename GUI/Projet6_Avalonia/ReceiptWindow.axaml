@@ -1,0 +1,6 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Projet6_Avalonia.ReceiptWindow"
+        Title="Ticket de Caisse" Width="350" Height="450" WindowStartupLocation="CenterOwner" Background="White">
+    <TextBlock Name="TxtTicket" Margin="20" FontFamily="Courier New" FontSize="12"/>
+</Window>
