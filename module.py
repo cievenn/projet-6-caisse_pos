@@ -5,34 +5,34 @@ import sqlite3
 from datetime import datetime
 
 # ==========================================
-# 1. INITIALISATION CTYPES
+# 1. INITIALISATION CTYPES (Mise à jour en c_double)
 # ==========================================
 dll_path = os.path.join(os.path.dirname(__file__), "calculs.dll")
 lib = ctypes.CDLL(dll_path)
 
-lib.calc_vat.argtypes = [ctypes.c_float, ctypes.c_float]
-lib.calc_vat.restype = ctypes.c_float
+lib.calc_vat.argtypes = [ctypes.c_double, ctypes.c_double]
+lib.calc_vat.restype = ctypes.c_double
 
-lib.calc_ttc.argtypes = [ctypes.c_float, ctypes.c_float]
-lib.calc_ttc.restype = ctypes.c_float
+lib.calc_ttc.argtypes = [ctypes.c_double, ctypes.c_double]
+lib.calc_ttc.restype = ctypes.c_double
 
-lib.sum_total.argtypes = [ctypes.POINTER(ctypes.c_float), ctypes.c_int]
-lib.sum_total.restype = ctypes.c_float
+lib.sum_total.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_int]
+lib.sum_total.restype = ctypes.c_double
 
 lib.render_change.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.c_int]
 lib.render_change.restype = ctypes.c_int
 
-lib.calc_ttc_batch.argtypes = [ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.c_int]
+lib.calc_ttc_batch.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.POINTER(ctypes.c_double), ctypes.c_int]
 lib.calc_ttc_batch.restype = None
 
 # ==========================================
 # 2. WRAPPERS CTYPES
 # ==========================================
 def calc_vat(price_ht: float, vat_rate: float) -> float:
-    return round(lib.calc_vat(ctypes.c_float(price_ht), ctypes.c_float(vat_rate)), 2)
+    return round(lib.calc_vat(ctypes.c_double(price_ht), ctypes.c_double(vat_rate)), 2)
 
 def calc_ttc(price_ht: float, vat_rate: float) -> float:
-    return round(lib.calc_ttc(ctypes.c_float(price_ht), ctypes.c_float(vat_rate)), 2)
+    return round(lib.calc_ttc(ctypes.c_double(price_ht), ctypes.c_double(vat_rate)), 2)
 
 def render_change(amount_cents: int) -> dict:
     denominations = [50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100, 50, 20, 10, 5, 2, 1]
@@ -42,7 +42,8 @@ def render_change(amount_cents: int) -> dict:
     
     result = {}
     for i in range(n_denom):
-        key = str(denominations[i] // 100) if denominations[i] >= 100 else str(denominations[i] / 100)
+        # Formatage propre demandé: ex "0.50"
+        key = f"{denominations[i] / 100:.2f}"
         result[key] = coins_out[i]
     return result
 
@@ -65,7 +66,8 @@ def init_db():
             name TEXT NOT NULL,
             price_ht REAL NOT NULL CHECK (price_ht >= 0),
             vat_rate REAL NOT NULL CHECK (vat_rate IN (0.06, 0.12, 0.21)),
-            stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0)
+            stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
+            is_active INTEGER NOT NULL DEFAULT 1 -- AJOUT: Soft delete
         );
         CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,11 +82,11 @@ def init_db():
             transaction_id INTEGER NOT NULL REFERENCES transactions(id),
             product_id INTEGER NOT NULL REFERENCES products(id),
             qty INTEGER NOT NULL CHECK (qty > 0),
+            unit_price_ht REAL NOT NULL, -- AJOUT: Historisation
+            vat_rate REAL NOT NULL,      -- AJOUT: Historisation
             unit_price_ttc REAL NOT NULL
         );
         """)
-        
-        # Injection de produits initiaux pour que le générateur ait des articles à vendre !
         count = conn.execute("SELECT COUNT(*) FROM products").fetchone()[0]
         if count == 0:
             conn.executemany("""
@@ -103,9 +105,9 @@ def init_db():
 # --- CRUD Produits ---
 def list_products(lowstock=False):
     with get_db() as conn:
-        query = "SELECT * FROM products"
+        query = "SELECT * FROM products WHERE is_active = 1"
         if lowstock:
-            query += " WHERE stock < 5"
+            query += " AND stock < 5"
         return [dict(row) for row in conn.execute(query).fetchall()]
 
 def add_product(data: dict):
@@ -120,7 +122,8 @@ def delete_product(product_id: int):
         stock = conn.execute("SELECT stock FROM products WHERE id = ?", (product_id,)).fetchone()
         if stock and stock['stock'] > 0:
             raise ValueError("Impossible de supprimer un produit en stock.")
-        conn.execute("DELETE FROM products WHERE id = ?", (product_id,))
+        # SOFT DELETE: On désactive au lieu de détruire la ligne
+        conn.execute("UPDATE products SET is_active = 0 WHERE id = ?", (product_id,))
         
 def update_product(product_id: int, data: dict):
     with get_db() as conn:
@@ -134,22 +137,16 @@ def update_product(product_id: int, data: dict):
 def create_transaction(items: list, amount_given: float) -> dict:
     with get_db() as conn:
         cursor = conn.cursor()
-        total_ht = 0.0
-        total_vat = 0.0
-        total_ttc = 0.0
+        total_ht, total_vat, total_ttc = 0.0, 0.0, 0.0
         
         for item in items:
-            prod = cursor.execute("SELECT * FROM products WHERE id = ?", (item['product_id'],)).fetchone()
+            prod = cursor.execute("SELECT * FROM products WHERE id = ? AND is_active = 1", (item['product_id'],)).fetchone()
             if not prod or prod['stock'] < item['qty']:
-                raise ValueError(f"Stock insuffisant pour le produit ID {item['product_id']}")
+                raise ValueError(f"Stock insuffisant ou produit invalide pour le produit ID {item['product_id']}")
             
-            ht = prod['price_ht'] * item['qty']
-            vat = calc_vat(prod['price_ht'], prod['vat_rate']) * item['qty']
-            ttc = calc_ttc(prod['price_ht'], prod['vat_rate']) * item['qty']
-            
-            total_ht += ht
-            total_vat += vat
-            total_ttc += ttc
+            total_ht += prod['price_ht'] * item['qty']
+            total_vat += calc_vat(prod['price_ht'], prod['vat_rate']) * item['qty']
+            total_ttc += calc_ttc(prod['price_ht'], prod['vat_rate']) * item['qty']
 
         total_ht = round(total_ht, 2)
         total_vat = round(total_vat, 2)
@@ -165,8 +162,9 @@ def create_transaction(items: list, amount_given: float) -> dict:
         for item in items:
             prod = cursor.execute("SELECT * FROM products WHERE id = ?", (item['product_id'],)).fetchone()
             unit_ttc = calc_ttc(prod['price_ht'], prod['vat_rate'])
-            cursor.execute("INSERT INTO transaction_items (transaction_id, product_id, qty, unit_price_ttc) VALUES (?, ?, ?, ?)",
-                           (trans_id, item['product_id'], item['qty'], unit_ttc))
+            # Insertion des valeurs historisées
+            cursor.execute("INSERT INTO transaction_items (transaction_id, product_id, qty, unit_price_ht, vat_rate, unit_price_ttc) VALUES (?, ?, ?, ?, ?, ?)",
+                           (trans_id, item['product_id'], item['qty'], prod['price_ht'], prod['vat_rate'], unit_ttc))
             cursor.execute("UPDATE products SET stock = stock - ? WHERE id = ?", (item['qty'], item['product_id']))
             
         change_cents = int(round((amount_given - total_ttc) * 100))
@@ -179,7 +177,7 @@ def create_transaction(items: list, amount_given: float) -> dict:
         }
 
 # ==========================================
-# 4. STATISTIQUES POUR LE DASHBOARD (SQL)
+# 4. STATISTIQUES DASHBOARD (Historisées)
 # ==========================================
 def daily_summary(date_str=None):
     if not date_str:
@@ -200,6 +198,7 @@ def daily_summary(date_str=None):
 
 def top_products(n=10):
     with get_db() as conn:
+        # Utilise les prix de l'historique de la transaction
         rows = conn.execute("""
             SELECT p.name, SUM(ti.qty * ti.unit_price_ttc) as revenue
             FROM transaction_items ti
@@ -212,11 +211,11 @@ def top_products(n=10):
 
 def get_revenue_by_vat():
     with get_db() as conn:
+        # Calcule la TVA basé sur le moment de l'achat !
         rows = conn.execute("""
-            SELECT p.vat_rate, SUM(ti.qty * p.price_ht * p.vat_rate) as vat_amount
+            SELECT ti.vat_rate, SUM(ti.qty * ti.unit_price_ht * ti.vat_rate) as vat_amount
             FROM transaction_items ti
-            JOIN products p ON ti.product_id = p.id
-            GROUP BY p.vat_rate
+            GROUP BY ti.vat_rate
         """).fetchall()
         return [dict(row) for row in rows]
 
