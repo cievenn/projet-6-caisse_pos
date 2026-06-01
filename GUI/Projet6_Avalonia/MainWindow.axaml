@@ -1,216 +1,200 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Projet6_Avalonia.MainWindow"
-        Title="Boutique L'Atelier - Caisse POS"
+        Title="Aiox POS - L'Atelier"
         Width="1200" Height="800" 
         WindowStartupLocation="CenterScreen"
-        Background="#141519"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="True"
         FontFamily="Segoe UI, system-ui, sans-serif">
 
     <Window.Styles>
-        <Style Selector="TextBlock">
-            <Setter Property="Foreground" Value="#E2E8F0"/>
+        <!-- Style Glassmorphism -->
+        <Style Selector="Border.Glass">
+            <Setter Property="Background" Value="#B3FFFFFF"/> <!-- Blanc transparent à 70% -->
+            <Setter Property="BorderBrush" Value="#FFFFFFFF"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="CornerRadius" Value="24"/>
+            <Setter Property="BoxShadow" Value="0 8 32 0 #1A000000"/>
         </Style>
-        
+
+        <!-- Animations et style des cartes produits -->
         <Style Selector="ListBox#DgvPosProducts ListBoxItem">
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="Margin" Value="8"/>
-            <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="Background" Value="#22252E"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="Background" Value="#80FFFFFF"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Transitions">
                 <Transitions>
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
                 </Transitions>
             </Setter>
         </Style>
+        
+        <Style Selector="ListBox#DgvPosProducts ListBoxItem:pointerover">
+            <Setter Property="RenderTransform" Value="scale(1.05)"/>
+            <Setter Property="Background" Value="#FFFFFFFF"/>
+        </Style>
+
         <Style Selector="ListBox#DgvPosProducts ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#22252E"/>
-            <Setter Property="BorderBrush" Value="#00E5FF"/>
+            <Setter Property="Background" Value="#FFFFFFFF"/>
+            <Setter Property="BorderBrush" Value="#FF4A4A"/> <!-- Rouge Aiox -->
             <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="BoxShadow" Value="0 0 15 0 #4000E5FF"/>
         </Style>
 
-        <Style Selector="TextBox, ComboBox">
-            <Setter Property="Background" Value="#2A2D37"/>
+        <!-- Style des Boutons -->
+        <Style Selector="Button.Primary">
+            <Setter Property="Background" Value="#FF4A4A"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="10"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.Primary:pointerover">
+            <Setter Property="RenderTransform" Value="scale(1.03)"/>
         </Style>
 
+        <Style Selector="Button.Secondary">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="BorderBrush" Value="#1E293B"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- TextBoxes et ComboBoxes -->
+        <Style Selector="TextBox, ComboBox">
+            <Setter Property="Background" Value="#80FFFFFF"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+
+        <!-- DataGrid transparent pour le Glassmorphism -->
         <Style Selector="DataGrid">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="RowBackground" Value="#22252E"/>
+            <Setter Property="RowBackground" Value="Transparent"/>
             <Setter Property="HeadersVisibility" Value="Column"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
-        
-        <Style Selector="DataGridRow:nth-child(even)">
-            <Setter Property="Background" Value="#2A2D37"/>
-        </Style>
-        <Style Selector="DataGridColumnHeader">
-            <Setter Property="Background" Value="#1A1C23"/>
-            <Setter Property="Foreground" Value="#9CA3AF"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="10"/>
-        </Style>
 
-        <Style Selector="Button">
-            <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Style Selector="DataGridRow:nth-child(even)">
+            <Setter Property="Background" Value="#20FFFFFF"/>
         </Style>
     </Window.Styles>
 
-    <TabControl Margin="10" Background="Transparent">
-        <TabItem Header="🛒 Terminal de Vente" FontSize="16" FontWeight="SemiBold" Foreground="#00E5FF">
-            <Grid ColumnDefinitions="*, 400">
-                
-                <Grid Grid.Column="0" RowDefinitions="Auto, *">
-                    <TextBlock Text="Menu / Catalogue" FontSize="22" FontWeight="Bold" Foreground="White" Margin="15,10,0,15"/>
-                    
-                    <ListBox Name="DgvPosProducts" Grid.Row="1" Background="Transparent" BorderThickness="0" SelectionMode="Single">
-                        <ListBox.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
-                            </ItemsPanelTemplate>
-                        </ListBox.ItemsPanel>
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Border Width="160" Height="200" Background="#22252E" CornerRadius="16" BoxShadow="0 4 10 0 #20000000">
-                                    <Grid RowDefinitions="*, Auto, Auto">
-                                        <Border Grid.Row="0" Background="#323644" CornerRadius="16,16,0,0" Margin="0,0,0,10">
-                                            <TextBlock Text="🖼️" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.3"/>
-                                        </Border>
-                                        
-                                        <TextBlock Grid.Row="1" Text="{Binding Name}" FontWeight="SemiBold" FontSize="15" Foreground="White" Margin="12,0,12,5" TextTrimming="CharacterEllipsis"/>
-                                        
-                                        <TextBlock Grid.Row="2" Text="{Binding PriceDisplay}" FontSize="14" Foreground="#9CA3AF" Margin="12,0,12,12"/>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </Grid>
+    <!-- Arrière-plan dégradé doux (Light Mode) -->
+    <Panel>
+        <Border>
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                    <GradientStop Color="#E0C3FC" Offset="0.0"/>
+                    <GradientStop Color="#8EC5FC" Offset="1.0"/>
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
 
-                <Border Grid.Column="1" Background="#22252E" CornerRadius="16" Margin="15,0,0,0" Padding="20">
-                    <Grid RowDefinitions="Auto, *, Auto, Auto, Auto">
-                        <TextBlock Text="Transaction / Panier" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
+        <!-- Contenu Principal -->
+        <TabControl Margin="20,40,20,20" Background="Transparent">
+            
+            <!-- 🛒 ONGLET CAISSE -->
+            <TabItem Header="Point de Vente" FontSize="18" FontWeight="Bold" Foreground="#1E293B">
+                <Grid ColumnDefinitions="3*, 2*" Margin="0,20,0,0">
+                    
+                    <!-- Catalogue / Menu -->
+                    <Grid Grid.Column="0" RowDefinitions="Auto, *">
+                        <TextBlock Text="Catalogue" FontSize="28" FontWeight="Black" Foreground="#1E293B" Margin="10,0,0,20"/>
                         
-                        <DataGrid Name="DgvPosCart" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" Margin="0,0,0,15">
+                        <ListBox Name="DgvPosProducts" Grid.Row="1" Background="Transparent" BorderThickness="0" SelectionMode="Single">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Width="150" Height="180" Padding="15">
+                                        <Grid RowDefinitions="*, Auto, Auto">
+                                            <Border Grid.Row="0" Background="#F1F5F9" CornerRadius="12" Margin="0,0,0,10">
+                                                <TextBlock Text="🛍️" FontSize="35" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.5"/>
+                                            </Border>
+                                            <TextBlock Grid.Row="1" Text="{Binding Name}" FontWeight="Bold" FontSize="14" Foreground="#1E293B" TextWrapping="Wrap"/>
+                                            <TextBlock Grid.Row="2" Text="{Binding PriceDisplay}" FontSize="14" Foreground="#FF4A4A" FontWeight="Bold" Margin="0,5,0,0"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+
+                    <!-- Panier Glassmorphism -->
+                    <Border Grid.Column="1" Classes="Glass" Padding="25" Margin="20,0,0,0">
+                        <Grid RowDefinitions="Auto, *, Auto, Auto, Auto">
+                            <TextBlock Text="Panier" FontSize="24" FontWeight="Black" Foreground="#1E293B" Margin="0,0,0,20"/>
+                            
+                            <DataGrid Name="DgvPosCart" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,15">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Article" Binding="{Binding Nom}" Width="*"/>
+                                    <DataGridTextColumn Header="Qté" Binding="{Binding Quantite}" Width="60"/>
+                                    <DataGridTextColumn Header="Prix" Binding="{Binding PrixUnit}" Width="70"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <Button Grid.Row="2" Classes="Secondary" Content="Ajouter au panier" Click="BtnAddCart_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="12" Margin="0,0,0,20"/>
+
+                            <Border Grid.Row="3" Background="#40FFFFFF" CornerRadius="12" Padding="15" Margin="0,0,0,20">
+                                <TextBlock Name="LblTotalTtc" Text="TOTAL : 0.00 €" FontSize="22" FontWeight="Black" Foreground="#1E293B" HorizontalAlignment="Right"/>
+                            </Border>
+
+                            <Button Grid.Row="4" Classes="Primary" Content="Encaisser" Click="BtnPay_Click" FontSize="18" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="15"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- 📦 ONGLET GESTION -->
+            <TabItem Header="Gestion des Stocks" FontSize="18" FontWeight="Bold" Foreground="#1E293B">
+                <Grid ColumnDefinitions="2*, 1.2*" Margin="0,20,0,0">
+                    <Border Classes="Glass" Grid.Column="0" Margin="0,0,10,0" Padding="20">
+                        <DataGrid Name="DgvCatalogue" SelectionChanged="DgvCatalogue_SelectionChanged" AutoGenerateColumns="False" IsReadOnly="True">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Article" Binding="{Binding Nom}" Width="*"/>
-                                <DataGridTextColumn Header="Qté" Binding="{Binding Quantite}" Width="50"/>
-                                <DataGridTextColumn Header="Prix U." Binding="{Binding PrixUnit}" Width="70"/>
+                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                                <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="*"/>
+                                <DataGridTextColumn Header="Prix HT" Binding="{Binding PriceDisplay}" Width="90"/>
+                                <DataGridTextColumn Header="Stock" Binding="{Binding Stock}" Width="80"/>
                             </DataGrid.Columns>
                         </DataGrid>
+                    </Border>
 
-                        <Button Grid.Row="2" Content="Ajouter la sélection ⬇️" Click="BtnAddCart_Click"
-                                Background="#323644" Foreground="White" 
-                                HorizontalAlignment="Stretch" Padding="12" Margin="0,0,0,20"/>
-
-                        <StackPanel Grid.Row="3" Spacing="10" Margin="0,0,0,25">
-                            <Separator Background="#323644"/>
-                            <TextBlock Name="LblTotalTtc" Text="GRAND TOTAL : 0.00 €" 
-                                       FontSize="24" FontWeight="Black" Foreground="#00FF87" 
-                                       HorizontalAlignment="Right" Margin="0,10,0,0"/>
-                        </StackPanel>
-
-                        <Grid Grid.Row="4" ColumnDefinitions="*, *" RowDefinitions="Auto, Auto">
-                            <Button Grid.Row="0" Grid.Column="0" Content="🗑️ EFFACER" 
-                                    Background="#4A1C20" Foreground="#FF4D4D" Padding="10" Margin="0,0,5,10" HorizontalAlignment="Stretch"/>
-                            
-                            <Button Grid.Row="0" Grid.Column="1" Content="👤 CLIENT" 
-                                    Background="#1A2B4C" Foreground="#4DA6FF" Padding="10" Margin="5,0,0,10" HorizontalAlignment="Stretch"/>
-                            
-                            <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Content="💳 PAIEMENT" Click="BtnPay_Click"
-                                    Background="#00E5FF" Foreground="#141519" FontSize="18" FontWeight="Black"
-                                    HorizontalAlignment="Stretch" Padding="18"/>
-                        </Grid>
-                    </Grid>
-                </Border>
-            </Grid>
-        </TabItem>
-
-        <TabItem Header="📦 Gestion Catalogue" FontSize="16" FontWeight="SemiBold" Foreground="#A0AAB2">
-            <Grid ColumnDefinitions="2*, 1.2*">
-                <Border Background="#22252E" CornerRadius="16" Margin="10" Padding="15">
-                    <DataGrid Name="DgvCatalogue" SelectionChanged="DgvCatalogue_SelectionChanged" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                            <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="*"/>
-                            <DataGridTextColumn Header="Prix HT" Binding="{Binding PriceDisplay}" Width="90"/>
-                            <DataGridTextColumn Header="TVA" Binding="{Binding VatDisplay}" Width="70"/>
-                            <DataGridTextColumn Header="Stock" Binding="{Binding Stock}" Width="70"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Border>
-
-                <Border Background="#22252E" CornerRadius="16" Grid.Column="1" Margin="10" Padding="25">
-                    <StackPanel Spacing="15">
-                        <TextBlock Text="Fiche Produit" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
-                        
-                        <StackPanel Spacing="5">
-                            <TextBlock Text="Nom du produit" Foreground="#9CA3AF" FontSize="12"/>
-                            <TextBox Name="TxtName"/>
-                        </StackPanel>
-
-                        <Grid ColumnDefinitions="*, 10, *">
-                            <StackPanel Spacing="5" Grid.Column="0">
-                                <TextBlock Text="Prix HT (€)" Foreground="#9CA3AF" FontSize="12"/>
-                                <TextBox Name="TxtPrice"/>
-                            </StackPanel>
-                            <StackPanel Spacing="5" Grid.Column="2">
-                                <TextBlock Text="Stock" Foreground="#9CA3AF" FontSize="12"/>
-                                <TextBox Name="TxtStock"/>
-                            </StackPanel>
-                        </Grid>
-
-                        <StackPanel Spacing="5">
-                            <TextBlock Text="Taux de TVA" Foreground="#9CA3AF" FontSize="12"/>
+                    <Border Classes="Glass" Grid.Column="1" Margin="10,0,0,0" Padding="25">
+                        <StackPanel Spacing="15">
+                            <TextBlock Text="Édition Produit" FontSize="22" FontWeight="Black" Foreground="#1E293B"/>
+                            <TextBox Name="TxtName" Watermark="Nom du produit"/>
+                            <TextBox Name="TxtPrice" Watermark="Prix HT (€)"/>
+                            <TextBox Name="TxtStock" Watermark="Quantité en stock"/>
                             <ComboBox Name="CbVat" HorizontalAlignment="Stretch" SelectedIndex="2">
                                 <ComboBoxItem Content="0.06"/>
                                 <ComboBoxItem Content="0.12"/>
                                 <ComboBoxItem Content="0.21"/>
                             </ComboBox>
+                            <Button Classes="Primary" Content="Sauvegarder" Click="BtnAddProduct_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,15,0,0"/>
+                            <Button Classes="Secondary" Content="Supprimer" Click="BtnDelete_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
                         </StackPanel>
-                        
-                        <Separator Margin="0,15,0,15" Background="#323644"/>
-
-                        <Button Content="➕ Nouveau Produit" Click="BtnAddProduct_Click" Background="#2563EB" Foreground="White" HorizontalAlignment="Stretch" Padding="10"/>
-                        <Button Content="✏️ Mettre à jour" Click="BtnEdit_Click" Background="#D97706" Foreground="White" HorizontalAlignment="Stretch" Padding="10"/>
-                        <Button Content="❌ Supprimer" Click="BtnDelete_Click" Background="#DC2626" Foreground="White" HorizontalAlignment="Stretch" Padding="10"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </TabItem>
-
-        <TabItem Header="📊 Statistiques du Jour" FontSize="16" FontWeight="SemiBold" Foreground="#A0AAB2">
-            <Grid>
-                <Border Background="#22252E" CornerRadius="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="450" Padding="40" BoxShadow="0 10 30 0 #30000000">
-                    <StackPanel Spacing="25">
-                        <TextBlock Text="Résumé d'Activité" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                        
-                        <Border Background="#1A2B4C" CornerRadius="12" Padding="20">
-                            <TextBlock Name="LblCa" Text="Chiffre d'Affaires TTC : --- €" FontSize="18" FontWeight="Bold" Foreground="#4DA6FF" HorizontalAlignment="Center"/>
-                        </Border>
-
-                        <Border Background="#163D2D" CornerRadius="12" Padding="20">
-                            <TextBlock Name="LblTickets" Text="Nombre de Tickets : ---" FontSize="18" FontWeight="Bold" Foreground="#00FF87" HorizontalAlignment="Center"/>
-                        </Border>
-
-                        <Border Background="#4A2D1A" CornerRadius="12" Padding="20">
-                            <TextBlock Name="LblTva" Text="TVA Collectée : --- €" FontSize="18" FontWeight="Bold" Foreground="#FF9D4D" HorizontalAlignment="Center"/>
-                        </Border>
-
-                        <Button Content="🔄 Rafraîchir les Données" Click="BtnRefreshStats_Click" Background="#323644" Foreground="White" Padding="15" Margin="0,20,0,0" HorizontalAlignment="Stretch"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </TabItem>
-    </TabControl>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Panel>
 </Window>

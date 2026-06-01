@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -23,6 +24,26 @@ namespace Projet6_Avalonia
             return JsonDocument.Parse(jsonString).RootElement.GetProperty("data");
         }
 
+        // Délégué au backend (qui utilise le C via Python)
+        public async Task<double> CalculateTotalAsync(IEnumerable<CartItem> cart)
+        {
+            var itemsList = new List<object>();
+            foreach (var item in cart)
+                itemsList.Add(new { product_id = item.Id, qty = item.Quantite });
+
+            var json = JsonSerializer.Serialize(new { items = itemsList });
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            
+            // On suppose ici que tu as créé une route /api/transactions/calculate dans Flask
+            var response = await _client.PostAsync("/api/transactions/calculate", content);
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonString = await response.Content.ReadAsStringAsync();
+                return JsonDocument.Parse(jsonString).RootElement.GetProperty("data").GetProperty("total_ttc").GetDouble();
+            }
+            return 0;
+        }
+
         public async Task<JsonElement> PostTransactionAsync(object transactionBody)
         {
             var json = JsonSerializer.Serialize(transactionBody);
@@ -40,29 +61,13 @@ namespace Projet6_Avalonia
             var json = JsonSerializer.Serialize(productBody);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _client.PostAsync("/api/products", content);
-            if (!response.IsSuccessStatusCode) throw new Exception("Erreur lors de l'ajout du produit.");
-        }
-        
-        public async Task UpdateProductAsync(int id, object productBody)
-        {
-            var json = JsonSerializer.Serialize(productBody);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _client.PutAsync($"/api/products/{id}", content);
-            if (!response.IsSuccessStatusCode) throw new Exception("Erreur lors de la modification du produit.");
+            if (!response.IsSuccessStatusCode) throw new Exception("Erreur d'ajout.");
         }
 
         public async Task DeleteProductAsync(int id)
         {
             var response = await _client.DeleteAsync($"/api/products/{id}");
-            if (!response.IsSuccessStatusCode) throw new Exception("Impossible de supprimer (le stock doit être à 0).");
-        }
-
-        public async Task<JsonElement> GetDailyStatsAsync()
-        {
-            var response = await _client.GetAsync("/api/stats/daily");
-            response.EnsureSuccessStatusCode();
-            var jsonString = await response.Content.ReadAsStringAsync();
-            return JsonDocument.Parse(jsonString).RootElement.GetProperty("data");
+            if (!response.IsSuccessStatusCode) throw new Exception("Impossible de supprimer.");
         }
     }
 }

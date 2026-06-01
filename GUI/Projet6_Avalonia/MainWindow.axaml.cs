@@ -11,7 +11,6 @@ namespace Projet6_Avalonia
     public partial class MainWindow : Window
     {
         private ApiService _api;
-        
         public ObservableCollection<Product> ProductsList { get; set; } = new();
         public ObservableCollection<CartItem> CartList { get; set; } = new();
 
@@ -30,7 +29,6 @@ namespace Projet6_Avalonia
         private async Task InitializeDataAsync()
         {
             await LoadProducts();
-            await LoadStats();
         }
 
         private async Task LoadProducts()
@@ -55,21 +53,7 @@ namespace Projet6_Avalonia
             catch (Exception ex) { Console.WriteLine("Erreur API : " + ex.Message); }
         }
 
-        private async Task LoadStats()
-        {
-            try
-            {
-                var stats = await _api.GetDailyStatsAsync();
-                LblCa.Text = $"Chiffre d'Affaires TTC : {stats.GetProperty("ca_ttc").GetDouble().ToString("F2")} €";
-                LblTickets.Text = $"Nombre de Tickets : {stats.GetProperty("n_tickets").GetInt32()}";
-                LblTva.Text = $"TVA Collectée : {stats.GetProperty("tva_total").GetDouble().ToString("F2")} €";
-            }
-            catch { }
-        }
-
-        private void BtnRefreshStats_Click(object sender, RoutedEventArgs e) => _ = LoadStats();
-
-        private void BtnAddCart_Click(object sender, RoutedEventArgs e)
+        private async void BtnAddCart_Click(object sender, RoutedEventArgs e)
         {
             if (DgvPosProducts.SelectedItem is not Product selected) return;
 
@@ -88,16 +72,20 @@ namespace Projet6_Avalonia
                     PrixUnit = selected.PriceHT, TVA = selected.VatRate
                 });
             }
-            UpdateTotal();
+            
+            // Délégation stricte du calcul à l'API
+            await UpdateTotalFromApi();
         }
 
-        private void UpdateTotal()
+        private async Task UpdateTotalFromApi()
         {
-            double total = 0;
-            foreach (var item in CartList) {
-                total += (item.PrixUnit * (1 + item.TVA)) * item.Quantite;
+            try 
+            {
+                // Envoie le panier à l'API pour qu'elle calcule le total via la DLL C
+                var total = await _api.CalculateTotalAsync(CartList);
+                LblTotalTtc.Text = $"TOTAL : {total:F2} €";
             }
-            LblTotalTtc.Text = $"Total TTC : {total:F2} €";
+            catch { LblTotalTtc.Text = "TOTAL : Erreur calcul"; }
         }
 
         private void DgvCatalogue_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -107,13 +95,6 @@ namespace Projet6_Avalonia
                 TxtName.Text = selected.Name;
                 TxtPrice.Text = selected.PriceHT.ToString(CultureInfo.InvariantCulture);
                 TxtStock.Text = selected.Stock.ToString();
-                
-                string tvaStr = selected.VatRate.ToString(CultureInfo.InvariantCulture);
-                foreach (ComboBoxItem item in CbVat.Items) {
-                    if (item.Content.ToString() == tvaStr) {
-                        CbVat.SelectedItem = item; break;
-                    }
-                }
             }
         }
 
@@ -128,23 +109,6 @@ namespace Projet6_Avalonia
                     stock = Convert.ToInt32(TxtStock.Text) 
                 };
                 await _api.AddProductAsync(p);
-                await LoadProducts();
-                TxtName.Text = ""; TxtPrice.Text = ""; TxtStock.Text = "";
-            } catch { }
-        }
-
-        private async void BtnEdit_Click(object sender, RoutedEventArgs e)
-        {
-            if (DgvCatalogue.SelectedItem is not Product selected) return;
-            try {
-                var selectedVat = (CbVat.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "0.21";
-                var p = new { 
-                    name = TxtName.Text, 
-                    price_ht = Convert.ToDouble(TxtPrice.Text.Replace(",", "."), CultureInfo.InvariantCulture), 
-                    vat_rate = Convert.ToDouble(selectedVat, CultureInfo.InvariantCulture), 
-                    stock = Convert.ToInt32(TxtStock.Text) 
-                };
-                await _api.UpdateProductAsync(selected.Id, p);
                 await LoadProducts();
             } catch { }
         }
@@ -165,7 +129,7 @@ namespace Projet6_Avalonia
             var paymentWindow = new PaymentWindow();
             var dialogResult = await paymentWindow.ShowDialog<double?>(this);
 
-            if (dialogResult.HasValue) // Si le client a validé et payé
+            if (dialogResult.HasValue) 
             {
                 var itemsList = new List<object>();
                 foreach (var item in CartList)
@@ -175,14 +139,12 @@ namespace Projet6_Avalonia
 
                 try
                 {
+                    // L'API fait la transaction, met à jour la DB et calcule le rendu monnaie via le C
                     var result = await _api.PostTransactionAsync(transaction);
                     
-                    var receiptWindow = new ReceiptWindow(result, dialogResult.Value);
-                    await receiptWindow.ShowDialog(this);
-
                     CartList.Clear();
-                    LblTotalTtc.Text = "Total TTC : 0.00 €";
-                    await LoadProducts(); await LoadStats();
+                    LblTotalTtc.Text = "TOTAL : 0.00 €";
+                    await LoadProducts();
                 }
                 catch { }
             }
