@@ -33,3 +33,6 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
 [C:/Users/10TerYan15/Documents/projet-6-caisse_pos/GUI/Projet6_Avalonia/ReceiptWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/10TerYan15/Documents/projet-6-caisse_pos/GUI/Projet6_Avalonia/StatsWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

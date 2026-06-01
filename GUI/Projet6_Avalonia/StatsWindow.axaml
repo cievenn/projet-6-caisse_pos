@@ -1,0 +1,73 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Projet6_Avalonia.StatsWindow"
+        Title="Statistiques des Ventes" Width="550" Height="500"
+        WindowStartupLocation="CenterOwner"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        CanResize="False"
+        FontFamily="Segoe UI, system-ui, sans-serif">
+
+    <Panel>
+        <Border Background="#F1F5F9" />
+
+        <Border Background="#B3FFFFFF" CornerRadius="20" Margin="20" 
+                BoxShadow="0 10 30 0 #15000000" Padding="30" 
+                BorderBrush="#FFFFFFFF" BorderThickness="1.5">
+            <StackPanel Spacing="20">
+                <TextBlock Text="📊 Statistiques des Ventes" FontSize="24" FontWeight="Black" 
+                           Foreground="#1E293B" HorizontalAlignment="Center"/>
+
+                <!-- Résumé du jour -->
+                <Border Background="#40FFFFFF" CornerRadius="12" Padding="20">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Aujourd'hui" FontSize="18" FontWeight="Bold" Foreground="#FF4A4A"/>
+                        <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto, Auto, Auto">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="CA TTC :" FontWeight="SemiBold" Foreground="#1E293B"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Name="LblDayCa" Text="0.00 €" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Right"/>
+                            
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="CA HT :" FontWeight="SemiBold" Foreground="#64748B" Margin="0,5,0,0"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Name="LblDayCaHt" Text="0.00 €" Foreground="#64748B" HorizontalAlignment="Right" Margin="0,5,0,0"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="TVA collectée :" FontWeight="SemiBold" Foreground="#64748B" Margin="0,5,0,0"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Name="LblDayTva" Text="0.00 €" Foreground="#64748B" HorizontalAlignment="Right" Margin="0,5,0,0"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Nb. tickets :" FontWeight="SemiBold" Foreground="#64748B" Margin="0,5,0,0"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Name="LblDayTickets" Text="0" Foreground="#64748B" HorizontalAlignment="Right" Margin="0,5,0,0"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Résumé de la semaine -->
+                <Border Background="#40FFFFFF" CornerRadius="12" Padding="20">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Cette semaine (7 derniers jours)" FontSize="18" FontWeight="Bold" Foreground="#2980b9"/>
+                        <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="CA TTC :" FontWeight="SemiBold" Foreground="#1E293B"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Name="LblWeekCa" Text="0.00 €" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Right"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Nb. tickets :" FontWeight="SemiBold" Foreground="#64748B" Margin="0,5,0,0"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Name="LblWeekTickets" Text="0" Foreground="#64748B" HorizontalAlignment="Right" Margin="0,5,0,0"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Résumé du mois -->
+                <Border Background="#40FFFFFF" CornerRadius="12" Padding="20">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Ce mois (30 derniers jours)" FontSize="18" FontWeight="Bold" Foreground="#27ae60"/>
+                        <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="CA TTC :" FontWeight="SemiBold" Foreground="#1E293B"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Name="LblMonthCa" Text="0.00 €" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Right"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Nb. tickets :" FontWeight="SemiBold" Foreground="#64748B" Margin="0,5,0,0"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Name="LblMonthTickets" Text="0" Foreground="#64748B" HorizontalAlignment="Right" Margin="0,5,0,0"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Name="LblError" Text="" Foreground="#e74c3c" FontSize="12" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Panel>
+</Window>

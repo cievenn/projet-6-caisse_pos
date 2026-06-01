@@ -69,5 +69,25 @@ namespace Projet6_Avalonia
             var response = await _client.DeleteAsync($"/api/products/{id}");
             if (!response.IsSuccessStatusCode) throw new Exception("Impossible de supprimer.");
         }
+
+        public async Task<JsonElement> GetDailyStatsAsync(string? date = null)
+        {
+            var url = "/api/stats/daily";
+            if (!string.IsNullOrEmpty(date)) url += $"?date={date}";
+            var response = await _client.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+            var jsonString = await response.Content.ReadAsStringAsync();
+            return JsonDocument.Parse(jsonString).RootElement.GetProperty("data");
+        }
+
+        public async Task<JsonElement> GetTransactionsAsync(string? date = null)
+        {
+            var url = "/api/transactions";
+            if (!string.IsNullOrEmpty(date)) url += $"?date={date}";
+            var response = await _client.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+            var jsonString = await response.Content.ReadAsStringAsync();
+            return JsonDocument.Parse(jsonString).RootElement.GetProperty("data");
+        }
     }
 }

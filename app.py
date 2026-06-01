@@ -51,6 +51,24 @@ def create_transaction():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
+@app.route("/api/transactions/calculate", methods=["POST"])
+def calculate_transaction():
+    try:
+        body = request.json
+        res = module.calculate_cart(body['items'])
+        return jsonify({"status": "ok", "data": res})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+@app.route("/api/transactions", methods=["GET"])
+def get_transactions():
+    try:
+        date_param = request.args.get('date')
+        data = module.list_transactions(date_param)
+        return jsonify({"status": "ok", "data": data})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 # --- Routes Statistiques exigées par le Cahier des Charges ---
 @app.route("/api/stats/daily", methods=["GET"])
 def get_daily_stats():

@@ -142,12 +142,22 @@ namespace Projet6_Avalonia
                     // L'API fait la transaction, met à jour la DB et calcule le rendu monnaie via le C
                     var result = await _api.PostTransactionAsync(transaction);
                     
+                    // Affichage du ticket de caisse (ReceiptWindow)
+                    var receiptWindow = new ReceiptWindow(result, dialogResult.Value);
+                    await receiptWindow.ShowDialog(this);
+
                     CartList.Clear();
                     LblTotalTtc.Text = "TOTAL : 0.00 €";
                     await LoadProducts();
                 }
                 catch { }
             }
+        }
+
+        private async void BtnStats_Click(object sender, RoutedEventArgs e)
+        {
+            var statsWindow = new StatsWindow();
+            await statsWindow.ShowDialog(this);
         }
     }
 }

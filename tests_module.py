@@ -21,9 +21,9 @@ def test_calc_ttc_basic():
 
 def test_render_change_exact_amount():
     res = module.render_change(4728)
-    assert res['20.00'] == 2
-    assert res['5.00'] == 1
-    assert res['2.00'] == 1
+    assert res['20'] == 2
+    assert res['5'] == 1
+    assert res['2'] == 1
     assert res['0.20'] == 1
     assert res['0.05'] == 1
     assert res['0.02'] == 1
@@ -31,7 +31,7 @@ def test_render_change_exact_amount():
 
 def test_render_change_greedy_minimum():
     res = module.render_change(50000)
-    assert res['500.00'] == 1
+    assert res['500'] == 1
     assert sum(res.values()) == 1
 
 def test_create_transaction_decrements_stock():
