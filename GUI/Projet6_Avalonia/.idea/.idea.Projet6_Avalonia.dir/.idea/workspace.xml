@@ -12,7 +12,10 @@
       <change beforePath="$PROJECT_DIR$/ApiService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/ApiService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MainWindow.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/MainWindow.axaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MainWindow.axaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MainWindow.axaml.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Models.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Models.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/PaymentWindow.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/PaymentWindow.axaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ReceiptWindow.axaml" beforeDir="false" afterPath="$PROJECT_DIR$/ReceiptWindow.axaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ReceiptWindow.axaml.cs" beforeDir="false" afterPath="$PROJECT_DIR$/ReceiptWindow.axaml.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bin/Debug/net10.0/Projet6_Avalonia.dll" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net10.0/Projet6_Avalonia.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bin/Debug/net10.0/Projet6_Avalonia.exe" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net10.0/Projet6_Avalonia.exe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bin/Debug/net10.0/Projet6_Avalonia.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net10.0/Projet6_Avalonia.pdb" afterDir="false" />
@@ -22,14 +25,19 @@
       <change beforePath="$PROJECT_DIR$/obj/Debug/net10.0/Avalonia/resources" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net10.0/Avalonia/resources" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/obj/Debug/net10.0/Projet6_Avalonia.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net10.0/Projet6_Avalonia.AssemblyInfo.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/obj/Debug/net10.0/Projet6_Avalonia.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net10.0/Projet6_Avalonia.AssemblyInfoInputs.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net10.0/Projet6_Avalonia.assets.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net10.0/Projet6_Avalonia.assets.cache" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/obj/Debug/net10.0/Projet6_Avalonia.dll" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net10.0/Projet6_Avalonia.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/obj/Debug/net10.0/Projet6_Avalonia.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net10.0/Projet6_Avalonia.pdb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/obj/Debug/net10.0/Projet6_Avalonia.sourcelink.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net10.0/Projet6_Avalonia.sourcelink.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/obj/Debug/net10.0/apphost.exe" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net10.0/apphost.exe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/obj/Debug/net10.0/ref/Projet6_Avalonia.dll" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net10.0/ref/Projet6_Avalonia.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/obj/Debug/net10.0/refint/Projet6_Avalonia.dll" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net10.0/refint/Projet6_Avalonia.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Projet6_Avalonia.csproj.nuget.dgspec.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Projet6_Avalonia.csproj.nuget.dgspec.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/project.assets.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/project.assets.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/project.nuget.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/project.nuget.cache" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/obj/rider.project.restore.info" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../data/db.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/../../data/db.sqlite" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../module.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../module.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -108,6 +116,8 @@
       <workItem from="1779800341520" duration="3696000" />
       <workItem from="1780306088196" duration="2112000" />
       <workItem from="1780308659029" duration="1200000" />
+      <workItem from="1780392916187" duration="1249000" />
+      <workItem from="1780400637285" duration="692000" />
     </task>
     <servers />
   </component>

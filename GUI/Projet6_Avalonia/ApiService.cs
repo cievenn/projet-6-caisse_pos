@@ -64,6 +64,14 @@ namespace Projet6_Avalonia
             if (!response.IsSuccessStatusCode) throw new Exception("Erreur d'ajout.");
         }
 
+        public async Task UpdateProductAsync(int id, object productBody)
+        {
+            var json = JsonSerializer.Serialize(productBody);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _client.PutAsync($"/api/products/{id}", content);
+            if (!response.IsSuccessStatusCode) throw new Exception("Erreur de mise à jour.");
+        }
+
         public async Task DeleteProductAsync(int id)
         {
             var response = await _client.DeleteAsync($"/api/products/{id}");

@@ -155,10 +155,8 @@ def add_product(data: dict):
 
 def delete_product(product_id: int):
     with get_db() as conn:
-        stock = conn.execute("SELECT stock FROM products WHERE id = ?", (product_id,)).fetchone()
-        if stock and stock['stock'] > 0:
-            raise ValueError("Impossible de supprimer un produit en stock.")
         # SOFT DELETE: On désactive au lieu de détruire la ligne
+        # Pas de vérification de stock car c'est une désactivation, pas une suppression
         conn.execute("UPDATE products SET is_active = 0 WHERE id = ?", (product_id,))
         
 def update_product(product_id: int, data: dict):
