@@ -103,7 +103,8 @@ def init_db():
             price_ht REAL NOT NULL CHECK (price_ht >= 0),
             vat_rate REAL NOT NULL CHECK (vat_rate IN (0.06, 0.12, 0.21)),
             stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
-            is_active INTEGER NOT NULL DEFAULT 1 -- AJOUT: Soft delete
+            is_active INTEGER NOT NULL DEFAULT 1, -- AJOUT: Soft delete
+            image_name TEXT DEFAULT NULL
         );
         CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -126,16 +127,18 @@ def init_db():
         count = conn.execute("SELECT COUNT(*) FROM products").fetchone()[0]
         if count == 0:
             conn.executemany("""
-                INSERT INTO products (name, price_ht, vat_rate, stock) VALUES (?, ?, ?, ?)
+                INSERT INTO products (name, price_ht, vat_rate, stock, image_name) VALUES (?, ?, ?, ?, ?)
             """, [
-                ("Pain Artisanal", 2.50, 0.06, 150),
-                ("Lait Bio 1L", 1.80, 0.06, 100),
-                ("Café Arabica 500g", 6.50, 0.06, 80),
-                ("Coca-Cola 33cl", 1.50, 0.21, 200),
-                ("Sandwich Club", 4.50, 0.12, 50),
-                ("Chips Sel 150g", 2.20, 0.21, 120),
-                ("Pommes 1kg", 3.00, 0.06, 90),
-                ("Bouteille d'eau 1.5L", 0.90, 0.06, 300)
+                ("Pain Artisanal", 2.50, 0.06, 150, "pain.png"),
+                ("Lait Bio 1L", 1.80, 0.06, 100, "lait1L.png"),
+                ("Café Arabica 500g", 6.50, 0.06, 80, "café.png"),
+                ("Coca-Cola 33cl", 1.50, 0.21, 200, "cocacola33cl.png"),
+                ("Sandwich Club", 4.50, 0.12, 50, "sandwichclub.png"),
+                ("Chips Sel 150g", 2.20, 0.21, 120, "chipssalees.png"),
+                ("Pommes 1kg", 3.00, 0.06, 90, "pommes1kg.png"),
+                ("Bouteille d'eau 1.5L", 0.90, 0.06, 300, "bouteillesdeau.png"),
+                ("Tablette Chocolat 100g", 2.10, 0.06, 150, "chocolat100g.png"),
+                ("Sac en tissu réutilisable", 1.50, 0.21, 500, "sacentissus.png")
             ])
 
 # --- CRUD Produits ---
@@ -149,23 +152,24 @@ def list_products(lowstock=False):
 def add_product(data: dict):
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO products (name, price_ht, vat_rate, stock) VALUES (?, ?, ?, ?)",
-                       (data['name'], data['price_ht'], data['vat_rate'], data.get('stock', 0)))
+        cursor.execute("INSERT INTO products (name, price_ht, vat_rate, stock, image_name) VALUES (?, ?, ?, ?, ?)",
+                       (data['name'], data['price_ht'], data['vat_rate'], data.get('stock', 0), data.get('image_name')))
         return cursor.lastrowid
 
 def delete_product(product_id: int):
     with get_db() as conn:
-        # SOFT DELETE: On désactive au lieu de détruire la ligne
-        # Pas de vérification de stock car c'est une désactivation, pas une suppression
+        prod = conn.execute("SELECT stock FROM products WHERE id = ?", (product_id,)).fetchone()
+        if prod and prod['stock'] > 0:
+            raise ValueError("Impossible de supprimer un produit avec du stock.")
         conn.execute("UPDATE products SET is_active = 0 WHERE id = ?", (product_id,))
         
 def update_product(product_id: int, data: dict):
     with get_db() as conn:
         conn.execute("""
             UPDATE products 
-            SET name = ?, price_ht = ?, vat_rate = ?, stock = ? 
+            SET name = ?, price_ht = ?, vat_rate = ?, stock = ?, image_name = COALESCE(?, image_name)
             WHERE id = ?
-        """, (data['name'], data['price_ht'], data['vat_rate'], data.get('stock', 0), product_id))
+        """, (data['name'], data['price_ht'], data['vat_rate'], data.get('stock', 0), data.get('image_name'), product_id))
 
 # --- Transactions ---
 def create_transaction(items: list, amount_given: float) -> dict:

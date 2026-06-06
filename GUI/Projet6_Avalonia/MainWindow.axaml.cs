@@ -57,7 +57,8 @@ namespace Projet6_Avalonia
                         Name = p.GetProperty("name").GetString(),
                         PriceHT = p.GetProperty("price_ht").GetDouble(),
                         VatRate = p.GetProperty("vat_rate").GetDouble(),
-                        Stock = p.GetProperty("stock").GetInt32()
+                        Stock = p.GetProperty("stock").GetInt32(),
+                        ImageName = p.TryGetProperty("image_name", out var img) && img.ValueKind != System.Text.Json.JsonValueKind.Null ? img.GetString() : null
                     });
                 }
             }

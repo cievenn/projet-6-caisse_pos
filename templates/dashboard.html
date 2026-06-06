@@ -2,36 +2,206 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard POS Dynamique</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; margin: 0; }
-        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
-        .summary-box { display: flex; justify-content: space-around; margin-bottom: 25px; gap: 15px; }
-        .card { background: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; flex: 1; }
-        .card h3 { margin: 0 0 10px 0; color: #7f8c8d; font-size: 14px; text-transform: uppercase; }
-        .card p { margin: 0; font-size: 24px; font-weight: bold; color: #2c3e50; }
-        .charts-wrapper { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 20px; }
-        .chart-container { width: 45%; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 350px; }
-        .chart-container.full-width { width: 94%; }
+        /* Importation d'une police moderne si Segoe UI n'est pas disponible */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+
+        body {
+            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #FFECD2 0%, #FCB69F 100%);
+            background-attachment: fixed;
+            padding: 30px;
+            margin: 0;
+            min-height: 100vh;
+            box-sizing: border-box;
+            color: #1E293B;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #1E293B;
+            margin: 0;
+            font-weight: 900;
+            font-size: 2.2rem;
+        }
+
+        /* Glassmorphism Styles */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 25px;
+        }
+
+        .dashboard-panel {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .section-title h2 {
+            margin: 0;
+            color: #FF6347;
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        .summary-box {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .stat-box {
+            background: rgba(255, 99, 71, 0.08); /* #10FF6347 équivalent */
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            flex: 1;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s;
+            cursor: default;
+        }
+
+        .stat-box:hover {
+            transform: scale(1.05);
+            background: rgba(255, 99, 71, 0.12);
+        }
+
+        .stat-label {
+            display: block;
+            color: #94A3B8;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 32px;
+            font-weight: 900;
+        }
+
+        .text-slate { color: #1E293B; }
+        .text-tomato { color: #FF6347; }
+
+        .charts-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .chart-container {
+            position: relative;
+            min-height: 350px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .full-width {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .half-width {
+            width: calc(50% - 15px);
+            box-sizing: border-box;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        @media (max-width: 900px) {
+            .summary-box {
+                flex-direction: column;
+            }
+            .half-width {
+                width: 100%;
+            }
+            body {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Tableau de Bord - Caisse Enregistreuse POS</h1>
-    
-    <div class="summary-box">
-        <div class="card"><h3>Tickets Édités</h3><p id="sum-tickets">0</p></div>
-        <div class="card"><h3>Chiffre d'Affaires Global (TTC)</h3><p id="sum-ca">0.00 €</p></div>
-        <div class="card"><h3>Total TVA Collectée</h3><p id="sum-tva">0.00 €</p></div>
-    </div>
+    <div class="dashboard-container">
+        <div class="page-header">
+            <span style="font-size: 2.2rem;">📊</span>
+            <h1>Aiox POS - Tableau de Bord</h1>
+        </div>
+        
+        <!-- Résumé Global -->
+        <div class="glass dashboard-panel">
+            <div class="section-title">
+                <span style="font-size: 1.5rem;">🔥</span>
+                <h2>Résumé Global</h2>
+            </div>
+            <div class="summary-box">
+                <div class="stat-box">
+                    <span class="stat-label">Tickets Édités</span>
+                    <span class="stat-value text-tomato" id="sum-tickets">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Chiffre d'Affaires (TTC)</span>
+                    <span class="stat-value text-slate" id="sum-ca">0.00 €</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">TVA Collectée</span>
+                    <span class="stat-value text-slate" id="sum-tva">0.00 €</span>
+                </div>
+            </div>
+        </div>
 
-    <div class="charts-wrapper">
-        <div class="chart-container full-width"><canvas id="caChart"></canvas></div>
-        <div class="chart-container"><canvas id="topProductsChart"></canvas></div>
-        <div class="chart-container"><canvas id="vatChart"></canvas></div>
+        <!-- Graphiques -->
+        <div class="charts-wrapper">
+            <div class="glass chart-container full-width">
+                <canvas id="caChart"></canvas>
+            </div>
+            <div class="glass chart-container half-width">
+                <canvas id="topProductsChart"></canvas>
+            </div>
+            <div class="glass chart-container half-width">
+                <canvas id="vatChart"></canvas>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Paramètres globaux Chart.js pour correspondre au design system
+        Chart.defaults.font.family = "'Segoe UI', 'Inter', system-ui, sans-serif";
+        Chart.defaults.color = '#94A3B8';
+        Chart.defaults.scale.grid.color = 'rgba(30, 41, 59, 0.05)';
+
         let caChartInstance, topChartInstance, vatChartInstance;
 
         async function loadData() {
@@ -42,15 +212,16 @@
                 if (json.status === "ok") {
                     const data = json.data;
                     
-                    // Mise à jour des compteurs textuels
+                    // Animation pour les compteurs (optionnel mais sympa)
                     document.getElementById('sum-tickets').innerText = data.summary.n_tickets;
                     document.getElementById('sum-ca').innerText = data.summary.ca_ttc.toFixed(2) + " €";
                     document.getElementById('sum-tva').innerText = data.summary.tva_total.toFixed(2) + " €";
                     
-                    // Rafraîchissement des graphiques
                     updateCharts(data);
                 }
-            } catch (err) { console.error("Erreur de rafraîchissement:", err); }
+            } catch (err) { 
+                console.error("Erreur de rafraîchissement:", err); 
+            }
         }
 
         function updateCharts(data) {
@@ -59,14 +230,57 @@
             const labelsCA = data.history.map(h => h.day);
             const valuesCA = data.history.map(h => h.total);
 
+            // Création d'un dégradé pour la zone sous la courbe
+            let gradientCA = ctxCA.createLinearGradient(0, 0, 0, 400);
+            gradientCA.addColorStop(0, 'rgba(255, 99, 71, 0.5)'); // #FF6347 avec opacité
+            gradientCA.addColorStop(1, 'rgba(255, 99, 71, 0.0)');
+
             if (caChartInstance) caChartInstance.destroy();
             caChartInstance = new Chart(ctxCA, {
                 type: 'line',
                 data: {
                     labels: labelsCA.length ? labelsCA : ['Aujourd\'hui'],
-                    datasets: [{ label: 'Ventes du jour (€)', data: valuesCA.length ? valuesCA : [data.summary.ca_ttc], borderColor: '#2980b9', backgroundColor: 'rgba(41, 128, 185, 0.1)', fill: true }]
+                    datasets: [{ 
+                        label: 'Ventes du jour (€)', 
+                        data: valuesCA.length ? valuesCA : [data.summary.ca_ttc], 
+                        borderColor: '#FF6347', 
+                        backgroundColor: gradientCA, 
+                        fill: true,
+                        tension: 0.4, // Courbe adoucie
+                        borderWidth: 3,
+                        pointBackgroundColor: '#FF6347',
+                        pointBorderColor: '#FFFFFF',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
                 },
-                options: { responsive: true, plugins: { title: { display: true, text: 'Chiffre d\'Affaires Quotidien' } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        title: { 
+                            display: true, 
+                            text: 'Chiffre d\'Affaires Quotidien', 
+                            color: '#1E293B', 
+                            font: { size: 18, weight: 900 },
+                            padding: { bottom: 20 }
+                        },
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                            titleFont: { size: 13 },
+                            bodyFont: { size: 14, weight: 'bold' },
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, border: { display: false } },
+                        x: { grid: { display: false }, border: { display: false } }
+                    }
+                }
             });
 
             // --- Graphique 2 : Top 10 Produits (Bar Horizontal) ---
@@ -79,9 +293,40 @@
                 type: 'bar',
                 data: {
                     labels: labelsTop,
-                    datasets: [{ label: 'CA par produit (€)', data: valuesTop, backgroundColor: '#27ae60' }]
+                    datasets: [{ 
+                        label: 'CA par produit (€)', 
+                        data: valuesTop, 
+                        backgroundColor: 'rgba(255, 99, 71, 0.85)',
+                        hoverBackgroundColor: '#FF6347',
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
                 },
-                options: { indexAxis: 'y', responsive: true, plugins: { title: { display: true, text: 'Top Produits par Chiffre d\'Affaires' } } }
+                options: { 
+                    indexAxis: 'y', 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        title: { 
+                            display: true, 
+                            text: 'Top Produits par CA', 
+                            color: '#1E293B', 
+                            font: { size: 18, weight: 900 },
+                            padding: { bottom: 20 }
+                        },
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        y: { grid: { display: false }, border: { display: false } },
+                        x: { beginAtZero: true, border: { display: false } }
+                    }
+                }
             });
 
             // --- Graphique 3 : Répartition par Taux de TVA (Doughnut) ---
@@ -94,13 +339,46 @@
                 type: 'doughnut',
                 data: {
                     labels: labelsVAT,
-                    datasets: [{ data: valuesVAT, backgroundColor: ['#e74c3c', '#f1c40f', '#9b59b6'] }]
+                    datasets: [{ 
+                        data: valuesVAT, 
+                        // Palette chaleureuse tirée du style
+                        backgroundColor: ['#FF6347', '#FF9F43', '#FFC371', '#FFE0DB'],
+                        borderWidth: 2,
+                        borderColor: '#FFFFFF',
+                        hoverOffset: 6
+                    }]
                 },
-                options: { responsive: true, plugins: { title: { display: true, text: 'Répartition de la TVA par Taux (6%, 12%, 21%)' } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { 
+                        title: { 
+                            display: true, 
+                            text: 'Répartition de la TVA', 
+                            color: '#1E293B', 
+                            font: { size: 18, weight: 900 },
+                            padding: { bottom: 20 }
+                        },
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { 
+                                usePointStyle: true, 
+                                padding: 20,
+                                font: { weight: '600' }
+                            } 
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                            padding: 12,
+                            cornerRadius: 8
+                        }
+                    }
+                }
             });
         }
 
-        // Chargement immédiat et boucle toutes les 30 secondes (CDC)
+        // Chargement immédiat et boucle toutes les 30 secondes
         loadData();
         setInterval(loadData, 30000);
     </script>

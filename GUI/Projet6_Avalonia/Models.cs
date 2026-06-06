@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 
 namespace Projet6_Avalonia
 {
@@ -11,6 +13,24 @@ namespace Projet6_Avalonia
         public double PriceHT { get; set; }
         public double VatRate { get; set; }
         public int Stock { get; set; }
+        public string? ImageName { get; set; }
+
+        public Bitmap? ProductImage
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(ImageName)) return null;
+                try
+                {
+                    var uri = new Uri($"avares://Projet6_Avalonia/Assets/Images/{ImageName}");
+                    return new Bitmap(AssetLoader.Open(uri));
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
 
         // Affichage prix HT simple (pour Gestion des Stocks)
         public string PriceDisplay => $"{PriceHT:F2} €";

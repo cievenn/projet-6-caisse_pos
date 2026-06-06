@@ -16,23 +16,23 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property.EntryPointFilePath = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = Projet6_Avalonia
-build_property.ProjectDir = C:\Users\10TerYan15\Documents\projet-6-caisse_pos\GUI\Projet6_Avalonia\
+build_property.ProjectDir = C:\Users\user\Documents\projet-6-caisse_pos\GUI\Projet6_Avalonia\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/10TerYan15/Documents/projet-6-caisse_pos/GUI/Projet6_Avalonia/App.axaml]
+[C:/Users/user/Documents/projet-6-caisse_pos/GUI/Projet6_Avalonia/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/10TerYan15/Documents/projet-6-caisse_pos/GUI/Projet6_Avalonia/MainWindow.axaml]
+[C:/Users/user/Documents/projet-6-caisse_pos/GUI/Projet6_Avalonia/MainWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/10TerYan15/Documents/projet-6-caisse_pos/GUI/Projet6_Avalonia/PaymentWindow.axaml]
+[C:/Users/user/Documents/projet-6-caisse_pos/GUI/Projet6_Avalonia/PaymentWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/10TerYan15/Documents/projet-6-caisse_pos/GUI/Projet6_Avalonia/ReceiptWindow.axaml]
+[C:/Users/user/Documents/projet-6-caisse_pos/GUI/Projet6_Avalonia/ReceiptWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/10TerYan15/Documents/projet-6-caisse_pos/GUI/Projet6_Avalonia/StatsWindow.axaml]
+[C:/Users/user/Documents/projet-6-caisse_pos/GUI/Projet6_Avalonia/StatsWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
