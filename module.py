@@ -42,10 +42,46 @@ def render_change(amount_cents: int) -> dict:
     
     result = {}
     for i in range(n_denom):
-        # Formatage propre demandé: ex "0.50"
-        key = f"{denominations[i] / 100:.2f}"
+        val = denominations[i] / 100
+        # Formatage CDC : entiers sans décimales ("20"), centimes avec ("0.20")
+        key = f"{val:.2f}" if val != int(val) else str(int(val))
         result[key] = coins_out[i]
     return result
+
+def calculate_cart(items: list) -> dict:
+    """Calcule le total d'un panier SANS créer de transaction.
+    Utilisé par le C# pour afficher le total en temps réel."""
+    with get_db() as conn:
+        total_ht, total_vat, total_ttc = 0.0, 0.0, 0.0
+        details = []
+        for item in items:
+            prod = conn.execute(
+                "SELECT * FROM products WHERE id = ? AND is_active = 1",
+                (item['product_id'],)
+            ).fetchone()
+            if not prod:
+                raise ValueError(f"Produit ID {item['product_id']} introuvable ou inactif.")
+            qty = item['qty']
+            unit_ht = prod['price_ht']
+            unit_vat = calc_vat(unit_ht, prod['vat_rate'])
+            unit_ttc = calc_ttc(unit_ht, prod['vat_rate'])
+            total_ht += unit_ht * qty
+            total_vat += unit_vat * qty
+            total_ttc += unit_ttc * qty
+            details.append({
+                "product_id": prod['id'],
+                "name": prod['name'],
+                "qty": qty,
+                "unit_price_ht": round(unit_ht, 2),
+                "unit_price_ttc": round(unit_ttc, 2),
+                "line_total_ttc": round(unit_ttc * qty, 2)
+            })
+        return {
+            "total_ht": round(total_ht, 2),
+            "total_vat": round(total_vat, 2),
+            "total_ttc": round(total_ttc, 2),
+            "details": details
+        }
 
 # ==========================================
 # 3. BASE DE DONNÉES ET LOGIQUE METIER
@@ -67,7 +103,8 @@ def init_db():
             price_ht REAL NOT NULL CHECK (price_ht >= 0),
             vat_rate REAL NOT NULL CHECK (vat_rate IN (0.06, 0.12, 0.21)),
             stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
-            is_active INTEGER NOT NULL DEFAULT 1 -- AJOUT: Soft delete
+            is_active INTEGER NOT NULL DEFAULT 1, -- AJOUT: Soft delete
+            image_name TEXT DEFAULT NULL
         );
         CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -90,16 +127,18 @@ def init_db():
         count = conn.execute("SELECT COUNT(*) FROM products").fetchone()[0]
         if count == 0:
             conn.executemany("""
-                INSERT INTO products (name, price_ht, vat_rate, stock) VALUES (?, ?, ?, ?)
+                INSERT INTO products (name, price_ht, vat_rate, stock, image_name) VALUES (?, ?, ?, ?, ?)
             """, [
-                ("Pain Artisanal", 2.50, 0.06, 150),
-                ("Lait Bio 1L", 1.80, 0.06, 100),
-                ("Café Arabica 500g", 6.50, 0.06, 80),
-                ("Coca-Cola 33cl", 1.50, 0.21, 200),
-                ("Sandwich Club", 4.50, 0.12, 50),
-                ("Chips Sel 150g", 2.20, 0.21, 120),
-                ("Pommes 1kg", 3.00, 0.06, 90),
-                ("Bouteille d'eau 1.5L", 0.90, 0.06, 300)
+                ("Pain Artisanal", 2.50, 0.06, 150, "pain.png"),
+                ("Lait Bio 1L", 1.80, 0.06, 100, "lait1L.png"),
+                ("Café Arabica 500g", 6.50, 0.06, 80, "café.png"),
+                ("Coca-Cola 33cl", 1.50, 0.21, 200, "cocacola33cl.png"),
+                ("Sandwich Club", 4.50, 0.12, 50, "sandwichclub.png"),
+                ("Chips Sel 150g", 2.20, 0.21, 120, "chipssalees.png"),
+                ("Pommes 1kg", 3.00, 0.06, 90, "pommes1kg.png"),
+                ("Bouteille d'eau 1.5L", 0.90, 0.06, 300, "bouteillesdeau.png"),
+                ("Tablette Chocolat 100g", 2.10, 0.06, 150, "chocolat100g.png"),
+                ("Sac en tissu réutilisable", 1.50, 0.21, 500, "sacentissus.png")
             ])
 
 # --- CRUD Produits ---
@@ -113,40 +152,47 @@ def list_products(lowstock=False):
 def add_product(data: dict):
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO products (name, price_ht, vat_rate, stock) VALUES (?, ?, ?, ?)",
-                       (data['name'], data['price_ht'], data['vat_rate'], data.get('stock', 0)))
+        cursor.execute("INSERT INTO products (name, price_ht, vat_rate, stock, image_name) VALUES (?, ?, ?, ?, ?)",
+                       (data['name'], data['price_ht'], data['vat_rate'], data.get('stock', 0), data.get('image_name')))
         return cursor.lastrowid
 
 def delete_product(product_id: int):
     with get_db() as conn:
-        stock = conn.execute("SELECT stock FROM products WHERE id = ?", (product_id,)).fetchone()
-        if stock and stock['stock'] > 0:
-            raise ValueError("Impossible de supprimer un produit en stock.")
-        # SOFT DELETE: On désactive au lieu de détruire la ligne
+        prod = conn.execute("SELECT stock FROM products WHERE id = ?", (product_id,)).fetchone()
+        if prod and prod['stock'] > 0:
+            raise ValueError("Impossible de supprimer un produit avec du stock.")
         conn.execute("UPDATE products SET is_active = 0 WHERE id = ?", (product_id,))
         
 def update_product(product_id: int, data: dict):
     with get_db() as conn:
         conn.execute("""
             UPDATE products 
-            SET name = ?, price_ht = ?, vat_rate = ?, stock = ? 
+            SET name = ?, price_ht = ?, vat_rate = ?, stock = ?, image_name = COALESCE(?, image_name)
             WHERE id = ?
-        """, (data['name'], data['price_ht'], data['vat_rate'], data.get('stock', 0), product_id))
+        """, (data['name'], data['price_ht'], data['vat_rate'], data.get('stock', 0), data.get('image_name'), product_id))
 
 # --- Transactions ---
 def create_transaction(items: list, amount_given: float) -> dict:
-    with get_db() as conn:
-        cursor = conn.cursor()
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("BEGIN")
         total_ht, total_vat, total_ttc = 0.0, 0.0, 0.0
         
+        # Phase 1 : Vérification des stocks et calcul des totaux
+        product_cache = []
         for item in items:
-            prod = cursor.execute("SELECT * FROM products WHERE id = ? AND is_active = 1", (item['product_id'],)).fetchone()
+            prod = cursor.execute(
+                "SELECT * FROM products WHERE id = ? AND is_active = 1",
+                (item['product_id'],)
+            ).fetchone()
             if not prod or prod['stock'] < item['qty']:
                 raise ValueError(f"Stock insuffisant ou produit invalide pour le produit ID {item['product_id']}")
             
             total_ht += prod['price_ht'] * item['qty']
             total_vat += calc_vat(prod['price_ht'], prod['vat_rate']) * item['qty']
             total_ttc += calc_ttc(prod['price_ht'], prod['vat_rate']) * item['qty']
+            product_cache.append(prod)
 
         total_ht = round(total_ht, 2)
         total_vat = round(total_vat, 2)
@@ -155,18 +201,24 @@ def create_transaction(items: list, amount_given: float) -> dict:
         if amount_given < total_ttc:
             raise ValueError("Montant donné insuffisant.")
             
-        cursor.execute("INSERT INTO transactions (total_ht, total_vat, total_ttc, amount_given) VALUES (?, ?, ?, ?)",
-                       (total_ht, total_vat, total_ttc, amount_given))
+        # Phase 2 : Insertion atomique (même transaction SQL)
+        cursor.execute(
+            "INSERT INTO transactions (total_ht, total_vat, total_ttc, amount_given) VALUES (?, ?, ?, ?)",
+            (total_ht, total_vat, total_ttc, amount_given)
+        )
         trans_id = cursor.lastrowid
         
-        for item in items:
-            prod = cursor.execute("SELECT * FROM products WHERE id = ?", (item['product_id'],)).fetchone()
+        for i, item in enumerate(items):
+            prod = product_cache[i]
             unit_ttc = calc_ttc(prod['price_ht'], prod['vat_rate'])
-            # Insertion des valeurs historisées
-            cursor.execute("INSERT INTO transaction_items (transaction_id, product_id, qty, unit_price_ht, vat_rate, unit_price_ttc) VALUES (?, ?, ?, ?, ?, ?)",
-                           (trans_id, item['product_id'], item['qty'], prod['price_ht'], prod['vat_rate'], unit_ttc))
+            cursor.execute(
+                "INSERT INTO transaction_items (transaction_id, product_id, qty, unit_price_ht, vat_rate, unit_price_ttc) VALUES (?, ?, ?, ?, ?, ?)",
+                (trans_id, item['product_id'], item['qty'], prod['price_ht'], prod['vat_rate'], unit_ttc)
+            )
             cursor.execute("UPDATE products SET stock = stock - ? WHERE id = ?", (item['qty'], item['product_id']))
             
+        conn.commit()
+        
         change_cents = int(round((amount_given - total_ttc) * 100))
         change_dict = render_change(change_cents)
         
@@ -175,6 +227,38 @@ def create_transaction(items: list, amount_given: float) -> dict:
             "total_ttc": total_ttc,
             "change_returned": change_dict
         }
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+def list_transactions(date_str=None):
+    """Renvoie l'historique des transactions, filtrable par date."""
+    with get_db() as conn:
+        if date_str:
+            rows = conn.execute(
+                "SELECT * FROM transactions WHERE date(date) = date(?) ORDER BY date DESC",
+                (date_str,)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM transactions ORDER BY date DESC"
+            ).fetchall()
+        
+        result = []
+        for row in rows:
+            trans = dict(row)
+            items = conn.execute(
+                """SELECT ti.*, p.name as product_name 
+                   FROM transaction_items ti 
+                   JOIN products p ON ti.product_id = p.id 
+                   WHERE ti.transaction_id = ?""",
+                (trans['id'],)
+            ).fetchall()
+            trans['items'] = [dict(i) for i in items]
+            result.append(trans)
+        return result
 
 # ==========================================
 # 4. STATISTIQUES DASHBOARD (Historisées)

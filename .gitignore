@@ -1,0 +1,34 @@
+# Visual Studio / .NET
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.obj
+*.o
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# IDE
+.idea/
+.vs/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Temporary files
+*.tmp
+*.log
+.DS_Store
+Thumbs.db

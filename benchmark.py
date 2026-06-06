@@ -20,9 +20,9 @@ def bench(label, fn):
 # Préparation des données
 prices = [10.0] * N
 rates = [0.21] * N
-prices_c = (ctypes.c_float * N)(*prices)
-rates_c = (ctypes.c_float * N)(*rates)
-out_c = (ctypes.c_float * N)()
+prices_c = (ctypes.c_double * N)(*prices)
+rates_c = (ctypes.c_double * N)(*rates)
+out_c = (ctypes.c_double * N)()
 
 # A. Python Pur
 def python_pur():
@@ -33,7 +33,7 @@ def python_pur():
 # B. ctypes scalaire
 def ctypes_scalaire():
     for i in range(N):
-        module.lib.calc_ttc(ctypes.c_float(prices[i]), ctypes.c_float(rates[i]))
+        module.lib.calc_ttc(ctypes.c_double(prices[i]), ctypes.c_double(rates[i]))
 
 # C. ctypes batch
 def ctypes_batch():

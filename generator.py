@@ -57,7 +57,7 @@ def gen_projet6(n, delay):
         items = [{"product_id": p["id"], "qty": random.randint(1,4)}
                  for p in random.sample(products, k=min(random.randint(1,4), len(products)))]
         r = requests.post(f"{BASE}/api/transactions",
-            json={"items": items, "amount_given": 50.0})
+            json={"items": items, "amount_given": 500.0})
         _log(i+1, n, r.status_code, f"{len(items)} article(s)")
         time.sleep(delay)
 
